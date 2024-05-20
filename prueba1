@@ -1,0 +1,61 @@
+// ==UserScript==
+// @name         Automatic Farming Script
+// @namespace    http://tampermonkey.net/
+// @version      0.2
+// @description  Automatically send farming attacks in the game.
+// @author       You
+// @match        https://*.travian.*/*
+// @grant        none
+// ==/UserScript==
+
+(function() {
+    'use strict';
+
+    let farmingInterval;
+    let attackButtons = [];
+
+    // Function to send the next attack
+    function sendNextAttack() {
+        if (attackButtons.length > 0) {
+            const button = attackButtons.shift(); // Get the first button
+            button.click(); // Click the button to send the attack
+            console.log('Attack sent');
+
+            // Schedule next attack with a reduced random delay between 1 to 2.5 seconds
+            const randomDelay = Math.floor(Math.random() * 1500) + 1000;
+            farmingInterval = setTimeout(sendNextAttack, randomDelay);
+        } else {
+            console.log('No more attacks to send.');
+            clearInterval(farmingInterval); // Clear the interval if no more buttons
+        }
+    }
+
+    // Function to start automatic farming
+    function startFarming() {
+        attackButtons = Array.from(document.querySelectorAll('.farmIcon'));
+        if (attackButtons.length > 0) {
+            // Start the first attack with a small delay
+            farmingInterval = setTimeout(sendNextAttack, 500);
+        } else {
+            console.log('No attack buttons found.');
+        }
+    }
+
+    // Function to create the start button in the game interface
+    function createStartButton() {
+        const startButton = document.createElement('button');
+        startButton.innerText = 'Start Auto Farming';
+        startButton.style.position = 'fixed';
+        startButton.style.top = '10px';
+        startButton.style.right = '10px';
+        startButton.style.zIndex = 1000;
+        startButton.style.backgroundColor = 'red'; // Added color to make it more visible
+        startButton.style.color = 'white'; // Added text color
+        startButton.style.padding = '10px'; // Added padding for better appearance
+        startButton.onclick = startFarming;
+        document.body.appendChild(startButton);
+    }
+
+    // Add the start button when the page loads
+    window.addEventListener('load', createStartButton);
+})();
